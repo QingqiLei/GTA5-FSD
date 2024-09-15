@@ -9,7 +9,8 @@ import mss
 import os
 import numpy as np
 import torch
-
+from torchvision.transforms import ToTensor
+import utils
 
 if torch.cuda.is_available():
     device = torch.device('cuda:0')
@@ -21,12 +22,12 @@ else:
 
 net = Net().to(device)
 net.load_state_dict(torch.load(
-    'GTA_FSD-1726363848_EPOCH_6.pth', weights_only=True))
+    'GTA_FSD-1726436055_EPOCH_2.pth', weights_only=True))
 
 
 joy = vjoy.VJoyDevice(1)
 
-vjoy_max = 32768
+
 
 
 class FPSTimer:
@@ -51,14 +52,12 @@ def predict_loop():
     pause = True
     return_was_down = False
     sct = mss.mss()
-    mon = {'top': 0, 'left': 0, 'width': 800, 'height': 600}
+    mon = {'top': 0, 'left': 0, 'width': 1920, 'height': 1080}
     speed = 0
     print('Ready')
 
     while True:
 
-        if (win32api.GetAsyncKeyState(0x08) & 0x8001 > 0):
-            break
         if (win32api.GetAsyncKeyState(0x0D) & 0x8001 > 0):
             if (return_was_down == False):
                 if (pause == False):
@@ -68,9 +67,9 @@ def predict_loop():
                         vjoy_max * min(max(0.5, 0), 1))
 
                     joy._data.wAxisY = int(
-                        vjoy_max * min(max(0, 0), 1))
+                        vjoy_max * min(max(1, 0), 1))
                     joy._data.wAxisZ = int(
-                        vjoy_max * min(max(0, 0), 1))
+                        vjoy_max * min(max(1, 0), 1))
                     joy.update()
 
                     print('Paused')
@@ -89,11 +88,11 @@ def predict_loop():
 
         sct_img = sct.grab(mon)
         img = Image.frombytes('RGB', sct_img.size, sct_img.rgb)
-        img = img.resize((380, 210), PIL.Image.BICUBIC)
-
-        img = np.array(img)/255.0
-
-        x = [[img[:, :, 0], img[:, :, 1], img[:, :, 2]]]
+        img = img.resize((640, 360), PIL.Image.BICUBIC)
+        img = img.crop(box=(0, 150, 640, 360))
+        
+        x = ToTensor()(img).view(-1, 3, utils.height, utils.width)
+        # print(x.shape)
 
         try:
             file = open("speed.txt", "r")
@@ -103,18 +102,20 @@ def predict_loop():
             pass
 
         img = torch.Tensor(x).to(device)
-        speed = torch.Tensor([[max(speed/40, 0.99)]]).to(device)
+        speed = torch.Tensor([[speed/utils.max_speed]]).to(device)
 
         predictions = net(img, speed)
         predictions = predictions[0]
 
+        vjoy_max = utils.vjoy_max
+
         steering_anble = min(max(predictions[0], 0), 1)
         Throttle = min(max(predictions[1], 0), 1)
-        Brake = min(max(predictions[2] - 0.5, 0), 1)
+        Brake = min(max(predictions[2], 0), 1)
 
         joy._data.wAxisX = int(vjoy_max * steering_anble)
-        joy._data.wAxisY = int(vjoy_max * Throttle)
-        joy._data.wAxisZ = int(vjoy_max * Brake)
+        joy._data.wAxisY = int(vjoy_max * (Throttle))
+        joy._data.wAxisZ = int(vjoy_max * (Brake))
         joy.update()
 
         os.system('cls')

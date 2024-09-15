@@ -7,20 +7,21 @@ import PIL
 from PIL import Image
 import mss
 import pygame
+import utils
 
 
 save_path='data1/'
 speed_fil_path='speed.txt'
 
 max_samples=100000
-samples_per_second=5
+samples_per_second=7
 
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
 csv_file = open(save_path + 'data.txt', 'a')
 
-print('Press ENTER to start recording!!!!!')
+print('Press - to start recording!!!!!')
 
 pics = os.listdir(save_path)
 
@@ -45,7 +46,7 @@ wait_time=(1/samples_per_second)
 stats_frame=0
 
 sct = mss.mss()
-mon = {'top': 0, 'left': 0, 'width': 800, 'height': 600}
+mon = {'top': 0, 'left': 0, 'width': 1920, 'height': 1080}
 
 pause=True
 return_was_down=False
@@ -61,10 +62,7 @@ previous_image_capture_time = 0
 while True:
 	pygame.event.pump()
 
-	if (win32api.GetAsyncKeyState(0x24)&0x8001 > 0):
-			break
-
-	if (win32api.GetAsyncKeyState(0x0D)&0x8001 > 0):
+	if (win32api.GetAsyncKeyState(0xBD)&0x8001 > 0):
 		if (return_was_down == False):
 			if (pause == False):
 				pause = True
@@ -112,7 +110,8 @@ while True:
 		
 		sct_img = sct.grab(mon)
 		img = Image.frombytes('RGB', sct_img.size, sct_img.rgb)
-		img = img.resize((380, 210), PIL.Image.BICUBIC)
+		img = img.resize((640, 360), PIL.Image.BICUBIC)
+		img = img.crop(box=(0, 150, 640, 360))
 		
 		steering_angle=joysticks[0].get_axis(0)
 		if (abs(steering_angle) < 0.008):
@@ -136,8 +135,8 @@ while True:
 		# print(joysticks[0], round(steering_angle, 2), round(brake, 2), round(throttle,2), speed)
 		total_count +=1
 		current_sample += 1
-		path = save_path + 'img%d_%d.jpg' % ( total_count, clip_count)
-		img.save(path)
+		path = save_path + 'img%d_%d.bmp' % ( total_count, clip_count)
+		img.save(path, 'BMP')
 		csv_file.write('%f,%f,%f,%s,%s\n' % (steering_angle, throttle, brake, speed, path))
 		csv_file.flush()
 			
