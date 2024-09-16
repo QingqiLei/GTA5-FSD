@@ -21,14 +21,9 @@ else:
 
 
 net = Net().to(device)
-net.load_state_dict(torch.load(
-    'GTA_FSD-1726436055_EPOCH_2.pth', weights_only=True))
-
+net.load_state_dict(torch.load('GTA_FSD-1726450567_EPOCH_1.pth', weights_only=True))
 
 joy = vjoy.VJoyDevice(1)
-
-
-
 
 class FPSTimer:
     def __init__(self):
@@ -58,7 +53,7 @@ def predict_loop():
 
     while True:
 
-        if (win32api.GetAsyncKeyState(0x0D) & 0x8001 > 0):
+        if (win32api.GetAsyncKeyState(0xBD) & 0x8001 > 0):
             if (return_was_down == False):
                 if (pause == False):
                     pause = True
@@ -92,7 +87,6 @@ def predict_loop():
         img = img.crop(box=(0, 150, 640, 360))
         
         x = ToTensor()(img).view(-1, 3, utils.height, utils.width)
-        # print(x.shape)
 
         try:
             file = open("speed.txt", "r")
@@ -111,11 +105,11 @@ def predict_loop():
 
         steering_anble = min(max(predictions[0], 0), 1)
         Throttle = min(max(predictions[1], 0), 1)
-        Brake = min(max(predictions[2], 0), 1)
+        Brake = min(max(predictions[2] , 0), 1)
 
         joy._data.wAxisX = int(vjoy_max * steering_anble)
-        joy._data.wAxisY = int(vjoy_max * (Throttle))
-        joy._data.wAxisZ = int(vjoy_max * (Brake))
+        joy._data.wAxisY = int(vjoy_max * (1 - Throttle))
+        joy._data.wAxisZ = int(vjoy_max * (1 - Brake))
         joy.update()
 
         os.system('cls')

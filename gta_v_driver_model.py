@@ -9,53 +9,85 @@ from utils import height
 
 
 class Net(nn.Module):
-    def __init__(self):
+    def __init__(self, train = False):
         super().__init__()
         self.conv_1 = nn.Sequential(
-            nn.Conv2d(3, 64, 3,  padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(64),
-            nn.MaxPool2d(2))
+            nn.Conv2d(3, 48, 7, stride=2),
+            nn.ReLU())
 
         self.conv_2 = nn.Sequential(
-            nn.Conv2d(64, 128, 3,  padding=1),
+            nn.Conv2d(48, 64, 7),
             nn.ReLU(),
-            nn.BatchNorm2d(128),
-            nn.MaxPool2d(2))
+            nn.AvgPool2d(2, stride=2))
 
         self.conv_3 = nn.Sequential(
-            nn.Conv2d(128, 128, 3,  padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(128),
-            nn.AvgPool2d(2))
+            nn.Conv2d(64, 96, 5),
+            nn.ReLU())
 
         self.conv_4 = nn.Sequential(
-            nn.Conv2d(128, 256, 3,  padding=1),
+            nn.Conv2d(96, 128, 5),
             nn.ReLU(),
-            nn.BatchNorm2d(256),
-            nn.MaxPool2d(2))
+            nn.AvgPool2d(2, stride=2))
+        
+        self.conv_5 = nn.Sequential(
+            nn.Conv2d(128, 192, 3),
+            nn.ReLU())
+        
+        self.conv_6 = nn.Sequential(
+            nn.Conv2d(192, 256, 3),
+            nn.ReLU(),
+            nn.AvgPool2d(2, stride=2))
+
+        self.conv_7 = nn.Sequential(
+            nn.Conv2d(256, 384, 3),
+            nn.ReLU())
+        
+        self.conv_8 = nn.Sequential(
+            nn.Conv2d(384, 512, 3),
+            nn.ReLU(),
+            nn.AvgPool2d(2, stride=2))
+            
         
         self.flatten = nn.Flatten()
 
         self.fc_1 = nn.Sequential(
-            nn.Linear(in_features=30721, out_features=1024))
+            nn.Linear(in_features=15361, out_features=4096),
+            nn.Dropout(p = 0.3, inplace=train))
+        
 
         self.fc_2 = nn.Sequential(
-            nn.Linear(in_features=1024, out_features=128))
+            nn.Linear(in_features=4096, out_features=3074),
+            nn.Dropout(p = 0.3, inplace=train))
 
         self.fc_3 = nn.Sequential(
-            nn.Linear(in_features=128, out_features=3))
+            nn.Linear(in_features=3074, out_features=2048),
+            nn.Dropout(p = 0.3, inplace=train))
+        
+        self.fc_4 = nn.Sequential(
+            nn.Linear(in_features=2048, out_features=1024),
+            nn.Dropout(p = 0.3, inplace=train))
+        
+
+        self.fc_5 = nn.Sequential(
+            nn.Linear(in_features=1024, out_features=3))
+
+
 
     def forward(self, x: torch.Tensor, speed: torch.Tensor):
         x = self.conv_1(x)
         x = self.conv_2(x)
         x = self.conv_3(x)
-        x = self.conv_3(x)
         x = self.conv_4(x)
+        x = self.conv_5(x)
+        x = self.conv_6(x)
+        x = self.conv_7(x)
+        x = self.conv_8(x)
         x = self.flatten(x)
         x = self.fc_1(torch.cat((x, speed), dim=1))
         x = self.fc_2(x)
         x = self.fc_3(x)
+        x = self.fc_4(x)
+        x = self.fc_5(x)
         return x
 
 if __name__ == '__main__':

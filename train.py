@@ -18,9 +18,6 @@ from gta_v_driver_model import Net
 import utils
 from torchvision.transforms import ToTensor
 
-data_sir = utils.data_sir
-speed_fil_path = utils.speed_file
-
 
 if torch.cuda.is_available():
     device = torch.device('cuda:0')
@@ -54,9 +51,9 @@ class CustomImageDataset(Dataset):
         return torch.Tensor(image), torch.Tensor([feature]), torch.Tensor(label)
 
 class Trainer():
-    net = Net().to(device)
+    net = Net(train=True).to(device)
     loss_function = nn.MSELoss()
-    optimizer = optim.Adam(net.parameters(), lr=0.0002)
+    optimizer = optim.Adam(net.parameters(), lr=0.001)
     MODEL_NAME = f"GTA_FSD-{int(time.time())}"
 
     def fwd_pass(self, X_img, X_speed, Y):
@@ -68,7 +65,7 @@ class Trainer():
         return loss
 
     def train(self, dataloader):
-        EPOCHS = 30
+        EPOCHS = 5
         with open('model.log', 'a') as f:
             for epoch in range(EPOCHS):
                 for batch, (image, feature, label) in enumerate(tqdm(dataloader)):
@@ -79,11 +76,8 @@ class Trainer():
                            f"{self.MODEL_NAME}_EPOCH_{str(epoch)}.pth")
 
 
-
-
 if __name__ == "__main__":
-    my_dataset = CustomImageDataset('labels.csv', 'data2', transform=ToTensor())
-    # image, feature, labels = my_dataset[4]
+    my_dataset = CustomImageDataset(os.path.join(utils.data_dir, 'tmp.csv'), utils.data_dir, transform=ToTensor())
     NUM_WORKERS = int(os.cpu_count())
     dataloader = DataLoader(my_dataset, batch_size=30, shuffle=True, num_workers=NUM_WORKERS)
     trainer = Trainer()
