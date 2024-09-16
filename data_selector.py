@@ -74,13 +74,17 @@ def analyze(file_name):
 def create_new_label_file(old_file, new_file_path):
 
 	lines = open(old_file, 'r').readlines()
-	
+	new_img_names = {}
+
 	with open(new_file_path, 'w') as output_file:
 		output_file.write(lines[0])
 		for line in lines[1:]:
 			file_name, speed, steer, throttle, brake = line.split(',')
 			file_name, speed, steer, throttle, brake = file_name, float(speed), float(steer), float(throttle), float(brake.strip())
-			
+			new_img_names[file_name] = [speed, steer, throttle, brake]
+		
+		for new_img_name in new_img_names.keys():
+			speed, steer, throttle, brake = new_img_names[new_img_name]
 			if (steer == 0.5 and throttle == 1 and brake == 1):
 				if random.random() > 0.2:
 					continue
@@ -88,7 +92,7 @@ def create_new_label_file(old_file, new_file_path):
 				if random.random() > 0.95:
 					continue
 
-			output_file.write('%s,%f,%f,%f,%f\n' % (file_name, speed, steer, 1- throttle, 1- brake))
+			output_file.write('%s,%f,%f,%f,%f\n' % (new_img_name, speed, steer, 1- throttle, 1- brake))
 
 		output_file.flush()
 
