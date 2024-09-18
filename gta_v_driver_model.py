@@ -2,10 +2,11 @@ from torchinfo import summary
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import utils
 
-
-from utils import width
-from utils import height
+width = 640
+height = utils.height
+# height = 160
 
 
 class Net(nn.Module):
@@ -18,7 +19,7 @@ class Net(nn.Module):
         self.conv_2 = nn.Sequential(
             nn.Conv2d(48, 64, 7),
             nn.ReLU(),
-            nn.AvgPool2d(2, stride=2))
+            nn.AvgPool2d(2, stride=2, padding=1))
 
         self.conv_3 = nn.Sequential(
             nn.Conv2d(64, 96, 5),
@@ -27,7 +28,8 @@ class Net(nn.Module):
         self.conv_4 = nn.Sequential(
             nn.Conv2d(96, 128, 5),
             nn.ReLU(),
-            nn.AvgPool2d(2, stride=2))
+            nn.AvgPool2d(2, stride=2, padding=1))
+            
         
         self.conv_5 = nn.Sequential(
             nn.Conv2d(128, 192, 3),
@@ -36,7 +38,7 @@ class Net(nn.Module):
         self.conv_6 = nn.Sequential(
             nn.Conv2d(192, 256, 3),
             nn.ReLU(),
-            nn.AvgPool2d(2, stride=2))
+            nn.AvgPool2d(2, stride=2, padding=1))
 
         self.conv_7 = nn.Sequential(
             nn.Conv2d(256, 384, 3),
@@ -45,30 +47,33 @@ class Net(nn.Module):
         self.conv_8 = nn.Sequential(
             nn.Conv2d(384, 512, 3),
             nn.ReLU(),
-            nn.AvgPool2d(2, stride=2))
+            nn.AvgPool2d(2, stride=2, padding=1))
             
         
         self.flatten = nn.Flatten()
 
         self.fc_1 = nn.Sequential(
-            nn.Linear(in_features=15361, out_features=4096),
-            nn.Dropout(p = 0.3, inplace=train))
+            nn.Linear(in_features=26113, out_features=4096),
+            nn.Dropout(p = 0.5, inplace=train))
         
 
         self.fc_2 = nn.Sequential(
-            nn.Linear(in_features=4096, out_features=3074),
-            nn.Dropout(p = 0.3, inplace=train))
+            nn.Linear(in_features=4096, out_features=4096),
+            nn.Dropout(p = 0.5, inplace=train))
 
         self.fc_3 = nn.Sequential(
-            nn.Linear(in_features=3074, out_features=2048),
-            nn.Dropout(p = 0.3, inplace=train))
+            nn.Linear(in_features=4096, out_features=3074),
+            nn.Dropout(p = 0.5, inplace=train))
         
         self.fc_4 = nn.Sequential(
-            nn.Linear(in_features=2048, out_features=1024),
-            nn.Dropout(p = 0.3, inplace=train))
-        
+            nn.Linear(in_features=3074, out_features=2048),
+            nn.Dropout(p = 0.5, inplace=train))
 
         self.fc_5 = nn.Sequential(
+            nn.Linear(in_features=2048, out_features=1024),
+            nn.Dropout(p = 0.5, inplace=train))
+        
+        self.fc_6 = nn.Sequential(
             nn.Linear(in_features=1024, out_features=3))
 
 
@@ -88,23 +93,24 @@ class Net(nn.Module):
         x = self.fc_3(x)
         x = self.fc_4(x)
         x = self.fc_5(x)
+        x = self.fc_6(x)
         return x
 
 if __name__ == '__main__':
     device = "cuda" if torch.cuda.is_available() else "cpu"
     net = Net().to(device)
     BATCH_SIZE = 5
-    summary(net, input_data=(torch.randn(BATCH_SIZE, 3, width, height).to(device), torch.randn(BATCH_SIZE, 1).to(device)))
+    summary(net, input_data=(torch.randn(BATCH_SIZE, 3, height, width).to(device), torch.randn(BATCH_SIZE, 1).to(device)))
 
     data = []
-    for i in range(100):
-        data.append(torch.rand(BATCH_SIZE, 3, width, height).to(device))
+    for i in range(1000):
+        data.append(torch.rand(BATCH_SIZE, 3, height, width).to(device))
 
     import time
 
-    # start = time.time()
-    # for i in range(1000):
-    #     net(data[i], torch.rand(30,1).to(device))
-    # end = time.time()
-    # print(end - start)
+    start = time.time()
+    for i in range(1000):
+        net(data[i], torch.rand(BATCH_SIZE,1).to(device))
+    end = time.time()
+    print(end - start)
 

@@ -71,9 +71,9 @@ class Trainer():
                 for batch, (image, feature, label) in enumerate(tqdm(dataloader)):
                     loss = self.fwd_pass(image.to(device), feature.to(device), label.to(device))
                     f.write(f"{self.MODEL_NAME}, {round(time.time(), 3)}, {round(float(loss),5)}\n")
-                print(f'epoch: {epoch}, loss: {loss}')
+                    f.flush()
                 torch.save(self.net.state_dict(),
-                           f"{self.MODEL_NAME}_EPOCH_{str(epoch)}.pth")
+                        f"{self.MODEL_NAME}_EPOCH_{str(epoch)}_BATCH_{str(batch)}.pth")
 
 
 if __name__ == "__main__":
