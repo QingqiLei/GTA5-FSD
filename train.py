@@ -17,7 +17,7 @@ from gta_v_driver_model import height
 from gta_v_driver_model import Net
 import utils
 from torchvision.transforms import ToTensor
-
+from PIL import Image
 
 if torch.cuda.is_available():
     device = torch.device('cuda:0')
@@ -41,7 +41,8 @@ class CustomImageDataset(Dataset):
 
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
-        image = cv2.imread(img_path)
+        image = Image.open(img_path)
+
         feature = self.img_labels.iloc[idx, 1].astype(float) / utils.max_speed
         label = self.img_labels.iloc[idx, 2:].values.astype(float)
         if self.transform:
@@ -53,7 +54,7 @@ class CustomImageDataset(Dataset):
 class Trainer():
     net = Net(train=True).to(device)
     loss_function = nn.MSELoss()
-    optimizer = optim.Adam(net.parameters(), lr=0.001)
+    optimizer = optim.Adam(net.parameters(), lr=0.0001)
     MODEL_NAME = f"GTA_FSD-{int(time.time())}"
 
     def fwd_pass(self, X_img, X_speed, Y):
@@ -79,6 +80,6 @@ class Trainer():
 if __name__ == "__main__":
     my_dataset = CustomImageDataset(os.path.join(utils.data_dir, 'tmp.csv'), utils.data_dir, transform=ToTensor())
     NUM_WORKERS = int(os.cpu_count())
-    dataloader = DataLoader(my_dataset, batch_size=30, shuffle=True, num_workers=NUM_WORKERS)
+    dataloader = DataLoader(my_dataset, batch_size=16, shuffle=True, num_workers=NUM_WORKERS)
     trainer = Trainer()
     trainer.train(dataloader)

@@ -54,14 +54,14 @@ def analyze(file_name):
 
 	most_common=counter.most_common(20)
 
-	print(t1, t2)
+	print('left steer and right steer total: ', t1, t2)
 
 	print("Total Samples: %d\n" % len(entries))
 	print("Average counts: %.3f" % np.mean(list(counter.values())))
 	print("Average counts (most common): %.3f\n" % np.mean([count for key, count in most_common]))
 
-	print("Right steer samples: %d (%.3f%% of total samples)" % (right_samples, (right_samples/len(entries))*100))
 	print("Left steer samples: %d (%.3f%% of total samples)" % (left_samples, (left_samples/len(entries))*100))
+	print("Right steer samples: %d (%.3f%% of total samples)" % (right_samples, (right_samples/len(entries))*100))
 	print("Straight steer samples: %d (%.3f%% of total samples)\n" % (straight_samples, (straight_samples/len(entries))*100))
 	print("Not throttle samples: %d (%.3f%% of total samples)" % (not_thr1, (not_thr1/len(entries))*100))
 	print("Not brake samples: %d (%.3f%% of total samples)\n" % (not_brake, (not_brake/len(entries))*100))
@@ -82,15 +82,36 @@ def create_new_label_file(old_file, new_file_path):
 			file_name, speed, steer, throttle, brake = line.split(',')
 			file_name, speed, steer, throttle, brake = file_name, float(speed), float(steer), float(throttle), float(brake.strip())
 			new_img_names[file_name] = [speed, steer, throttle, brake]
-		
+		# previous_brake = ""
+		# pre_img = ""
 		for new_img_name in new_img_names.keys():
 			speed, steer, throttle, brake = new_img_names[new_img_name]
+			# find wrong braking
+			# if brake != 1:
+			# 	if pre_img in new_img_names:
+			# 		if new_img_names[pre_img][3] == 1:
+			# 			previous_brake = new_img_name
+			# else:
+			# 	if pre_img in new_img_names:
+			# 		if new_img_names[pre_img][3] != 1 and speed < 1:
+			# 			print(previous_brake, pre_img)
+			# pre_img = new_img_name
+
+
+			if not os.path.isfile(os.path.join(utils.data_dir, new_img_name)):
+				continue
 			if (steer == 0.5 and throttle == 1 and brake == 1):
-				if random.random() > 0.2:
+				if random.random() > 0.1:
 					continue
-			if (steer > 0.5):
-				if random.random() > 0.95:
-					continue
+			# if(steer == 0.5 and throttle < 1):
+			# 	if random.random() > 0.83:
+			# 		continue
+			# if (steer < 0.5 and steer > 0.3):
+			# 	if random.random() > 0.9:
+			# 		continue
+			# if (steer > 0.6):
+			# 	if random.random() > 0.9:
+			# 		continue
 
 			output_file.write('%s,%f,%f,%f,%f\n' % (new_img_name, speed, steer, 1- throttle, 1- brake))
 
