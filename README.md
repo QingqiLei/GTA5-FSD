@@ -112,3 +112,5 @@ Those two kinds of data are conflicting with each other. The model makes predict
 <img src="52911.bmp" alt="drawing"/>
 <img src="52912.bmp" alt="drawing"/>
 
+* Lane level navigation. Human can memorize road information, but neural network can not. For example, a self driving car wants to turn right at the second intersection. It may change to right lane before the first intersection. The lane can be right only sometimes, the car needs to go back to mid lane, then preceed and change to right lane again. This situation happens if the car doesn't know the right lane is going to be right only. The self driving car can repeat this maneuver if the navigation is not lane level. The solution is lane level navigation. The car can upload detailed road information to the server once it passes by. The server can save the lane level road information and send to the car if the navigation pass the road. In this case, the self driving car can only make wrong lane change in the first time. The road information generated on one car can be used by other cars. So, the detailed road information can be quickly collected by Tesla cars.
+<img src="intersection.png" alt="drawing"/>
