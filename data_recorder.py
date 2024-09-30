@@ -1,9 +1,6 @@
 import time
-import csv
-import win32gui
 import win32api
 import os
-import sys
 import PIL
 from PIL import Image
 import mss
@@ -13,7 +10,7 @@ import utils
 
 save_path = utils.data_dir
 label_file = utils.label_file
-speed_fil_path = 'speed.txt'
+speed_fil_path = utils.speed_file
 
 max_samples = 100000
 samples_per_second = 7

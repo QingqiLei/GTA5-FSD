@@ -5,8 +5,8 @@ import torch.nn.functional as F
 import utils
 
 width = 640
-height = utils.height
-# height = 160
+# height = utils.height
+height = 160
 
 
 class Net(nn.Module):
@@ -19,7 +19,7 @@ class Net(nn.Module):
         self.conv_2 = nn.Sequential(
             nn.Conv2d(48, 64, 7),
             nn.ReLU(),
-            nn.AvgPool2d(2, stride=2, padding=1))
+            nn.MaxPool2d(2, stride=2, padding=1))
 
         self.conv_3 = nn.Sequential(
             nn.Conv2d(64, 96, 5),
@@ -28,7 +28,7 @@ class Net(nn.Module):
         self.conv_4 = nn.Sequential(
             nn.Conv2d(96, 128, 5),
             nn.ReLU(),
-            nn.AvgPool2d(2, stride=2, padding=1))
+            nn.MaxPool2d(2, stride=2, padding=1))
             
         
         self.conv_5 = nn.Sequential(
@@ -38,7 +38,7 @@ class Net(nn.Module):
         self.conv_6 = nn.Sequential(
             nn.Conv2d(192, 256, 3),
             nn.ReLU(),
-            nn.AvgPool2d(2, stride=2, padding=1))
+            nn.MaxPool2d(2, stride=2, padding=1))
 
         self.conv_7 = nn.Sequential(
             nn.Conv2d(256, 384, 3),
@@ -46,14 +46,13 @@ class Net(nn.Module):
         
         self.conv_8 = nn.Sequential(
             nn.Conv2d(384, 512, 3),
-            nn.ReLU(),
-            nn.AvgPool2d(2, stride=2, padding=1))
+            nn.ReLU())
             
         
         self.flatten = nn.Flatten()
 
         self.fc_1 = nn.Sequential(
-            nn.Linear(in_features=26113, out_features=4096),
+            nn.Linear(in_features=32769, out_features=4096),
             nn.Dropout(p = 0.5, inplace=train))
         
 
@@ -99,11 +98,13 @@ class Net(nn.Module):
 if __name__ == '__main__':
     device = "cuda" if torch.cuda.is_available() else "cpu"
     net = Net().to(device)
+    net.load_state_dict(torch.load('GTA_FSD-1726960744_EPOCH_1.pth', weights_only=True))
+
     BATCH_SIZE = 5
     summary(net, input_data=(torch.randn(BATCH_SIZE, 3, height, width).to(device), torch.randn(BATCH_SIZE, 1).to(device)))
 
     data = []
-    for i in range(1000):
+    for i in range(10):
         data.append(torch.rand(BATCH_SIZE, 3, height, width).to(device))
 
     import time
