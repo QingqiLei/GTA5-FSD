@@ -10,7 +10,71 @@ This is a project which creates a self-driving car in GTA V with Pytorch that fo
 * gta_fsd_driver.py runs the model, makes prediction on each frame and uses vJoy as input.
 
 
+# Model
+The model use 8 convolutional layers and 6 dense layers. The input is the 640x160 RGB image. The output is 3 numbers which are steering angle, throttle and brake.
 
+```
+==========================================================================================
+Layer (type:depth-idx)                   Output Shape              Param #
+==========================================================================================
+Net                                      [5, 3]                    --
+├─Sequential: 1-1                        [5, 48, 77, 317]          --
+│    └─Conv2d: 2-1                       [5, 48, 77, 317]          7,104
+│    └─ReLU: 2-2                         [5, 48, 77, 317]          --
+├─Sequential: 1-2                        [5, 64, 36, 156]          --
+│    └─Conv2d: 2-3                       [5, 64, 71, 311]          150,592
+│    └─ReLU: 2-4                         [5, 64, 71, 311]          --
+│    └─MaxPool2d: 2-5                    [5, 64, 36, 156]          --
+├─Sequential: 1-3                        [5, 96, 32, 152]          --
+│    └─Conv2d: 2-6                       [5, 96, 32, 152]          153,696
+│    └─ReLU: 2-7                         [5, 96, 32, 152]          --
+├─Sequential: 1-4                        [5, 128, 15, 75]          --
+│    └─Conv2d: 2-8                       [5, 128, 28, 148]         307,328
+│    └─ReLU: 2-9                         [5, 128, 28, 148]         --
+│    └─MaxPool2d: 2-10                   [5, 128, 15, 75]          --
+├─Sequential: 1-5                        [5, 192, 13, 73]          --
+│    └─Conv2d: 2-11                      [5, 192, 13, 73]          221,376
+│    └─ReLU: 2-12                        [5, 192, 13, 73]          --
+├─Sequential: 1-6                        [5, 256, 6, 36]           --
+│    └─Conv2d: 2-13                      [5, 256, 11, 71]          442,624
+│    └─ReLU: 2-14                        [5, 256, 11, 71]          --
+│    └─MaxPool2d: 2-15                   [5, 256, 6, 36]           --
+├─Sequential: 1-7                        [5, 384, 4, 34]           --
+│    └─Conv2d: 2-16                      [5, 384, 4, 34]           885,120
+│    └─ReLU: 2-17                        [5, 384, 4, 34]           --
+├─Sequential: 1-8                        [5, 512, 2, 32]           --
+│    └─Conv2d: 2-18                      [5, 512, 2, 32]           1,769,984
+│    └─ReLU: 2-19                        [5, 512, 2, 32]           --
+├─Flatten: 1-9                           [5, 32768]                --
+├─Sequential: 1-10                       [5, 4096]                 --
+│    └─Linear: 2-20                      [5, 4096]                 134,225,920
+│    └─Dropout: 2-21                     [5, 4096]                 --
+├─Sequential: 1-11                       [5, 4096]                 --
+│    └─Linear: 2-22                      [5, 4096]                 16,781,312
+│    └─Dropout: 2-23                     [5, 4096]                 --
+├─Sequential: 1-12                       [5, 3074]                 --
+│    └─Linear: 2-24                      [5, 3074]                 12,594,178
+│    └─Dropout: 2-25                     [5, 3074]                 --
+├─Sequential: 1-13                       [5, 2048]                 --
+│    └─Linear: 2-26                      [5, 2048]                 6,297,600
+│    └─Dropout: 2-27                     [5, 2048]                 --
+├─Sequential: 1-14                       [5, 1024]                 --
+│    └─Linear: 2-28                      [5, 1024]                 2,098,176
+│    └─Dropout: 2-29                     [5, 1024]                 --
+├─Sequential: 1-15                       [5, 3]                    --
+│    └─Linear: 2-30                      [5, 3]                    3,075
+==========================================================================================
+Total params: 175,938,085
+Trainable params: 175,938,085
+Non-trainable params: 0
+Total mult-adds (G): 32.41
+==========================================================================================
+Input size (MB): 6.14
+Forward/backward pass size (MB): 162.55
+Params size (MB): 703.75
+Estimated Total Size (MB): 872.44
+==========================================================================================
+```
 ### Versions used
 
 - Python: 3.10
@@ -48,7 +112,3 @@ Those two kinds of data are conflicting with each other. The model makes predict
 <img src="52911.bmp" alt="drawing"/>
 <img src="52912.bmp" alt="drawing"/>
 
-
-
-
-* The size of model: It is hard to know if the model is big enough or too big. I starts from a smaller model (fewer convolutional and dense layer)
