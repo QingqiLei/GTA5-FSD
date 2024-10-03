@@ -129,15 +129,18 @@ Rador is used to find the speed of other cars and lidar is for creating 3D model
 
 ## Lane level navigation. 
 The current FSD doesn't seem to know the lane information from navigation. It makes this mistake on this situation. 
-<img src="intersection.png" alt="drawing"/>
+<img src="intersection.png" alt="drawing" width="600"/>
 
 In China, the left turn lane may not be the left lane (can be mid lane). If the self driving car doesn't know whether lane is left turn lane. It could make mistakes.
+
 <img src="left_turn.webp" alt="drawing"/>
 
 
+Current Tesla navigation in China on Left turn lane.
+<img src="tesla_navigation.png" alt="isolated" width="700"/>
+
 ### Road data collection.
 Tesla is able to get road information through the collected dashcam video. Or, the car can process the video, generate road information and upload to server.
-
 
 ## Speed limit
 Speed limit maybe different at different time. In some cases, school zone speed limit is active during Mo-Fr 7:00-9:00; 14:00-16:00 or when the yellow light is flashing. It's difficult for CNN model to understand. The easy fix is to set the speed limit correctly and let car follow the speed limit.
