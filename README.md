@@ -95,28 +95,49 @@ These are the pip packages I extracted from pip freeze...
 - torchvision==0.19.1
 - pyvjoystick==1.1.2.1
 
-## Running it
 
+# Thoughts about this project
 
-# Thoughts about Self-Driving
+##  Short memory
+This project makes prediction frame by frame. Ideally the model should have a short memory or make prediction on last several seconds of sensor data. The problem of making prediction on frame is there is no speed imformation of other cars. 
 
-* This project makes prediction frame by frame. The problem is there is no speed imformation of other cars on a single frame. We can estimate the speed of other cars through a short video, but not a frame.
-For example, My car is following another car at 30 MPH. It will be very easy to tell I am following the car in a video. But it would look like I am going to collide with the front car (don't know it's stationary or moving) in a single frame. And for Stop Sign, the model needs to remember which car comes earlier, so the model should have a short memory. In other workds, it makes prediction on last a few seconds of video.
-I am not going to create 3D convolutional model in this project as it's more complecated and training data is hard to collect, the model is only for each frame. So I removed all other vehicles to records training data. In real world self driving, the model should make prediction on the video of past several seconds.
-* If a 3D convolutional neural network is used to make prediction on last a few seconds of video, it can aviod recompute in convolutional layer.
-* The speed of other cars matters, but the exact speed doesn't matter. We don't need to know the exact speed of other car in real world driving. For example, when we make right turn, we look at the cars on left and estimate the time the other car takes to reach here. Other self driving companies use rador to find the speed of other cars and use that to calculate how many seconds the other car take to reach the intersection, but end to end driving and human driving don't need that.
-* Use high quality driving data, not conflicting data. In my training data, there are some bad quality data.
-    1. I drive wrongly sometimes. Some city roads are difficult and I made mistakes to driving on correct roads. I pause the recording and delete the image soon after it happen.
-    2. Braking after completing navigation. There were some data that I brake and stop on road after completing the navigation. Those data conflicts with other data that I am pressing accelerator pedal. Those two kinds of data are conflicting with each other. The model makes prediction on each frame and can not understand why I brakes. So I cleaned my training data. The braking only occurs on turning and trip completion. For example, those two image are about braking on completing the navigation. The navigation disappeared when car is close enough. So, there is no information to tell why I brake here.
+### Examples
+ * My car is following another car at 30 MPH. It will be very easy to know I am following the car in a video. But it would look like I am going to rear end the front car on a single frame because it's impossible to know if the other car is moving or stationary on a single frame. 
+ 
+ * Stop Sign. The model needs to remember which car comes earlier, so the model should have a short memory. In other workds, it makes prediction on last a few seconds of video.
+
+### 3D CNN
+3D CNN can process video and seems a good option for making neural network to have good short memory.
+
+## Training data collection and cleaning.
+
+### Conflicting data makes training difficult. 
+Conflicting data is the opposite driving behiviors on similar situations.
+In my training data, there are some bad quality data.
+* I drive wrongly and didn't follow navigation sometimes. Some city roads are difficult and I made mistakes to find the correct road. I pause the recording and delete the image soon after it happen. 
+* Driving randomly without navigation can makes training difficult. The navigation can disappear when I reach destination, see the two images below.  I want the car to follow the navigation and stop when reaches destination. So I deleted the image with no navigation on it.
 
 <img src="52911.bmp" alt="drawing"/>
 <img src="52912.bmp" alt="drawing"/>
 
-* High quality data in real world driving. The driving behavior should be uniform, not random. For example, a driver can brake and pull over because he wants to see the good scenery. It's bad training data, and can make neural network hard to converge.
 
-* Lane level navigation. Human can memorize road information, but neural network can not. For example, a self driving car wants to turn right at the second intersection. It may change to right lane before the first intersection. The lane can be right only sometimes, the car needs to go back to mid lane, then preceed and change to right lane again. This situation happens if the car doesn't know the right lane is going to be right only. The self driving car can repeat this maneuver if the navigation is not lane level. The solution is lane level navigation. The car can upload detailed road information to the server once it passes by. The server can save the lane level road information and send to the car if the navigation pass the road. In this case, the self driving car can only make wrong lane change in the first time. The road information generated on one car can be used by other cars. So, the detailed road information can be quickly collected by Tesla cars.
+
+# Thoughts about Tesla FSD
+
+## Rador and Lidar
+Rador is used to find the speed of other cars and lidar is for creating 3D model. Other self driving companies have to use those because it's difficult to calcualte speed or build 3D model on vision. Human drives car on vision. Only tesla is able to collect data from real-world driver, e.g., vision data and driving maneuvers.
+
+## Lane level navigation. 
+The current FSD doesn't seem to know the lane information from navigation. It makes this mistake on this situation. 
 <img src="intersection.png" alt="drawing"/>
 
-* Speed limit maybe different at different time. In some cases, school zone speed limit is active during Mo-Fr 7:00-9:00; 14:00-16:00 or when the yellow light is flashing. It's difficult for CNN model to understand. The easy fix is to set the speed limit correctly and let car follow the speed limit.
+In China, the left turn lane may not be the left lane (can be mid lane). If the self driving car doesn't know whether lane is left turn lane. It could make mistakes.
+<img src="left_turn.webp" alt="drawing"/>
 
-* The car should treat red light and stoped traffic differently, because the car behind me can not see the front traffic stops in some cases. So, if the front traffic suddenly slows down or fully stops, the car should should slow down far enough.
+
+### Road data collection.
+Tesla is able to get road information through the collected dashcam video. Or, the car can process the video, generate road information and upload to server.
+
+
+## Speed limit
+Speed limit maybe different at different time. In some cases, school zone speed limit is active during Mo-Fr 7:00-9:00; 14:00-16:00 or when the yellow light is flashing. It's difficult for CNN model to understand. The easy fix is to set the speed limit correctly and let car follow the speed limit.
