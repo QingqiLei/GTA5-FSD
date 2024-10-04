@@ -106,8 +106,8 @@ This project makes prediction frame by frame. Ideally the model should have a sh
  
  * Stop Sign. The model needs to remember which car comes earlier, so the model should have a short memory. In other workds, it makes prediction on last a few seconds of video.
 
-### 3D CNN
-3D CNN can process video and seems a good option for making neural network to have good short memory.
+### Refer to other video classification model
+May find a model in [Kinetics-600](https://paperswithcode.com/sota/action-classification-on-kinetics-600?p=videomae-v2-scaling-video-masked-autoencoders) leaderboard and apply to self-driving task.
 
 ## Training data collection and cleaning.
 
